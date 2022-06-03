@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <title>User Info</title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+		<br>
+		<div class="box">
+        
+			<div><h1>User Info</h1> 
+				<p> Google OAuth successful. JWT created. </p>
+			</div>
+			<!-- https://stackoverflow.com/questions/55066246/wrapping-long-text-sections-in-jinja2  {{ ('\n' ~ jwt) | wordwrap(78) }}-->
+			<div><p> Your JWT:  {{jwt}}</p> 
+			
+			<form><p> The same JWT in a way that's easier to copy:<br> <input type = "text" value = {{jwt}} /></p>
+			</form>
+		</div>
+    </body>
+</html>

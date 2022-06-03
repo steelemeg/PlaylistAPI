@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>Welcome!</title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+		<br>
+		<div class="box">
+        
+			<div><h1>Welcome to the Marina. </h1> <br>
+				<p> Hi there. <br><br>
+				This application allows you to authenticate with Google using OAuth 2.0. <br>
+				You will then have the ability to generate JWTs (JSON Web Tokens).<br>
+				JWTs may be used with the separate Marina API to create, delete, and view Boats. </p>
+			</div>
+			<div><p> Original randomly generated application state is: {{state}}</p> <br></div>
+			<div><form action= {{ authorization_url }}>
+			<input type="submit" class="button" name="auth_button" formmethod="post" value="Auth with Google to Generate a JWT"></form></div>
+		</div>
+    </body>
+</html>
