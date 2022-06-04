@@ -10,6 +10,17 @@
 			<div><h1>User Info</h1> 
 				<p> Google OAuth successful. JWT created. </p>
 			</div>
+			{% if is_new == True %}
+				<div><p> Welcome new user! Your user profile has been created with the following properties: </p>
+			{% else %}
+				 <div><p> Welcome back! Your user profile contains the following properties: </p>
+			{% endif %}
+				
+			<p> Unique ID: {{id}} </p>
+			<p> Email address: {{email}} </p>
+			<p> Name: {{first_name}} {{last_name}}</p> </div>
+			
+			
 			<!-- https://stackoverflow.com/questions/55066246/wrapping-long-text-sections-in-jinja2  {{ ('\n' ~ jwt) | wordwrap(78) }}-->
 			<div><p> Your JWT:  {{jwt}}</p> 
 			

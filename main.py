@@ -1,3 +1,10 @@
+from google.cloud import datastore
+from flask import Flask, request, render_template, Response
+import json
+import constants
+import songs
+import owners
+import playlists
 import os
 # Using Google OAuth as my JWT provider and to obtain user information.
 # Based largely on https://requests-oauthlib.readthedocs.io/en/latest/examples/google.html
@@ -14,9 +21,10 @@ app.register_blueprint(songs.bp)
 app.register_blueprint(playlists.bp)
 app.register_blueprint(owners.bp)
 app.state = ''
+client = datastore.Client()
 
 # We don't require as much user information for this project
-app.scope = ['openid']
+app.scope =['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
 app.google = OAuth2Session(constants.client_id, scope=app.scope, redirect_uri=constants.redirect_url)
     
 @app.route('/', methods=['GET'])
@@ -42,13 +50,41 @@ def oauth():
     try:
         idinfo = id_token.verify_oauth2_token(access_token['id_token'], requests.Request(), constants.client_id)
         userid = idinfo['sub']
+        # Scope controls what comes back in the response! This should have email and name
+                
     except ValueError:
         res_body = json.dumps({"Error": "Invalid token"})
         res = Response(response=res_body, status=401)         
         return res
+    
+    try:
+        first_name = idinfo['given_name']
+        last_name = idinfo['family_name']
+        email = idinfo['email']
+        print('NAME: ' + first_name + ' ' + last_name)
+        print('EMAIL: '+ email)
+    except:
+        print('Problem parsing user information')
     # Per https://dev.to/kimmaida/signing-and-validating-json-web-tokens-jwt-for-everyone-25fb 
     # the JWT itself is supposed to be pretty big (800+ characters)
-    return render_template('userinfo.html', jwt = access_token['id_token'])
+    
+    # Check if this user is new
+    query = client.query(kind="users")
+    query.add_filter("id", "=", userid)
+    # Convert to a list for easier use
+    results = list(query.fetch())
+    is_new = False
+    if len(results) > 0:
+        # Existing user
+        is_new = False
+    else:
+        # New user!
+        user = datastore.entity.Entity(key=client.key(constants.users))
+        user.update({'id': userid, 'email': email, 'first_name': first_name, 'last_name': last_name})
+        client.put(user)
+        is_new = True
+    
+    return render_template('userinfo.html', jwt = access_token['id_token'], email = email, first_name = first_name, last_name = last_name, is_new = is_new, id = userid)
 
   
 if __name__ == '__main__':
