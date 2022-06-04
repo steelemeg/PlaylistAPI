@@ -1,0 +1,8 @@
+https://cs493-portfolio-marshmeg-2.uc.r.appspot.com/oauth
+
+https://www.googleapis.com/auth/userinfo.profile
+
+
+1. Okay to have all endpoints require a valid JWT? Except for the get-all open endpoints
+2. If a request needs to supply a user identifier, what needs to be specified by the person making the request.
+		what does this mean? It really requires the JWT
