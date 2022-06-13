@@ -1,0 +1,5530 @@
+{
+	"info": {
+		"_postman_id": "4026081a-328e-4dd7-a976-36b4250c1cf7",
+		"name": "portfolio",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20466955"
+	},
+	"item": [
+		{
+			"name": "get all users with pagination 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"   //Check for appropriate 200 status code",
+							"   pm.response.to.have.status(200);",
+							"});",
+							"",
+							"let jsonData = pm.response.json()",
+							"",
+							"pm.test('The users list contains my school user', () => {",
+							"    _.include(jsonData.users, (item) => {",
+							"        pm.expect(item.last_name).to.include('Steele')",
+							"        pm.expect(item.first_name).to.include('Megan')",
+							"    })",
+							"})",
+							"",
+							"pm.test('The users list contains my personal user', () => {",
+							"    _.include(jsonData.users, (item) => {",
+							"        pm.expect(item.last_name).to.include('Marshall')",
+							"        pm.expect(item.first_name).to.include('Megan')",
+							"    })",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{app_url}}/users",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch against the users endpoint 405",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"405 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(405);",
+							"});",
+							"",
+							"pm.test(\"405 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Invalid method for this endpoint\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/html"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add song 201",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"//Set song id environment variable from response",
+							"pm.environment.set(\"song1_id\", pm.response.json()[\"id\"]);",
+							"",
+							"pm.test(\"response 201 status code\", function () {",
+							"    //Check for 201 status code",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"I’m Gonna Be (500 Miles)\");",
+							"   pm.expect(pm.response.json()[\"artist\"]).to.eq(\"The Proclaimers\");",
+							"   pm.expect(pm.response.json()[\"album\"]).to.eq(\"Sunshine on Leith\");",
+							"   pm.expect(pm.response.json()[\"length\"]).to.eq(219);",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"I’m Gonna Be (500 Miles)\",\n    \"artist\": \"The Proclaimers\",\n    \"album\": \"Sunshine on Leith\",\n    \"length\": 219\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add song with extra attribute 201",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"//Set song id environment variable from response",
+							"pm.environment.set(\"song2_id\", pm.response.json()[\"id\"]);",
+							"",
+							"pm.test(\"response 201 status code\", function () {",
+							"    //Check for 201 status code",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Maps\");",
+							"   pm.expect(pm.response.json()[\"artist\"]).to.eq(\"SBPMJ\");",
+							"   pm.expect(pm.response.json()[\"album\"]).to.eq(\" \");",
+							"   pm.expect(pm.response.json()[\"length\"]).to.eq(223);",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Maps\",\n    \"artist\": \"SBPMJ\",\n    \"length\": 223,\n    \"brass\": \"yes\"\n\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add song with no JWT 201",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"//Set boat id environment variable from response",
+							"pm.environment.set(\"song3_id\", pm.response.json()[\"id\"]);",
+							"",
+							"pm.test(\"response 201 status code\", function () {",
+							"    //Check for 201 status code",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Trouble\");",
+							"   pm.expect(pm.response.json()[\"artist\"]).to.eq(\"TV on the Radio\");",
+							"   pm.expect(pm.response.json()[\"album\"]).to.eq(\"Seeds\");",
+							"   pm.expect(pm.response.json()[\"length\"]).to.eq(274);",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Trouble\",\n    \"artist\": \"TV on the Radio\",\n    \"album\": \"Seeds\",\n    \"length\": 274\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add song with missing attributes 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"The request object is missing at least one of the required attributes\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"The System Only Dreams in Total Darkness\",\n    \"artist\": \"The National\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add song with non-json Accepts 406",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"406 status code\", function () {",
+							"    //Check for 406 status code",
+							"    pm.response.to.have.status(406);",
+							"});",
+							"",
+							"pm.test(\"406 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"No match was found between the request's Accept header and the available options for this endpoint\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "text/html",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Como Te Quiero\",\n    \"artist\": \"Khruangbin\",\n    \"album\": \"Con Todo El Mundo\",\n    \"length\": 243\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add songs with non-json request 415",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"415 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(415);",
+							"});",
+							"",
+							"pm.test(\"415 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Only application/json MIMEtype is accepted\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/html"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Como Te Quiero\",\n    \"artist\": \"Khruangbin\",\n    \"album\": \"Con Todo El Mundo\",\n    \"length\": 243\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add song with an invalid length",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Valid song lengths are between 1 and 1048576\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Como Te Quiero\",\n    \"artist\": \"Khruangbin\",\n    \"album\": \"Con Todo El Mundo\",\n    \"length\": -1\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get all songs with pagination 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"   //Check for appropriate 200 status code",
+							"   pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"only correct number of boats in response\", function () {",
+							"    //Check for correct number of loads",
+							"    pm.expect(pm.response.json()[\"songs\"].length).to.equal(3);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put against the songs endpoint 405",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"405 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(405);",
+							"});",
+							"",
+							"pm.test(\"405 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Invalid method for this endpoint\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/html"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"I’m Gonna Be (500 Miles)\",\n    \"artist\": \"The Proclaimers\",\n    \"album\": \"Sunshine on Leith\",\n    \"length\": 219\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song JSON 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"I’m Gonna Be (500 Miles)\");",
+							"    pm.expect(pm.response.json()[\"artist\"]).to.eq(\"The Proclaimers\");",
+							"    pm.expect(pm.response.json()[\"album\"]).to.eq(\"Sunshine on Leith\");",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(219);",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song invalid Accepts 406",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"406 status code\", function () {",
+							"    //Check for 406 status code",
+							"    pm.response.to.have.status(406);",
+							"});",
+							"",
+							"pm.test(\"406 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"No match was found between the request's Accept header and the available options for this endpoint\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/xml",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get song with invalid id 404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for 404 response",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"No song with this song_id exists\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{invalid_song_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{invalid_song_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch song with no updated attributes 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"The request object is missing any recognized attributes\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\r\n}"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch song with non-json Accepts 406",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"406 status code\", function () {",
+							"    //Check for 406 status code",
+							"    pm.response.to.have.status(406);",
+							"});",
+							"",
+							"pm.test(\"406 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"No match was found between the request's Accept header and the available options for this endpoint\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "text/html",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Como Te Quiero\",\n    \"artist\": \"Khruangbin\",\n    \"album\": \"Con Todo El Mundo\",\n    \"length\": 243\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch songs with non-json request 415",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"415 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(415);",
+							"});",
+							"",
+							"pm.test(\"415 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Only application/json MIMEtype is accepted\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/html"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Como Te Quiero\",\n    \"artist\": \"Khruangbin\",\n    \"album\": \"Con Todo El Mundo\",\n    \"length\": 243\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch song with invalid length 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Valid song lengths are between 1 and 1048576\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"length\": 2048576\r\n}"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch song with invalid id 404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for appropriate 404 status code",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for appropriate error message",
+							"    pm.expect(pm.response.json()[\"Error\"]).to.equal(\"No song with this song_id exists\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{invalid_song_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{invalid_song_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song after failed patches 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"I’m Gonna Be (500 Miles)\");",
+							"    pm.expect(pm.response.json()[\"artist\"]).to.eq(\"The Proclaimers\");",
+							"    pm.expect(pm.response.json()[\"album\"]).to.eq(\"Sunshine on Leith\");",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(219);",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch song name and album 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})",
+							"",
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"name update was applied\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"I'm Gonna be\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"I'm Gonna be\",\r\n    \"album\": \"Finest\"\r\n}"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song after patch 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"I'm Gonna be\");",
+							"    pm.expect(pm.response.json()[\"artist\"]).to.eq(\"The Proclaimers\");",
+							"    pm.expect(pm.response.json()[\"album\"]).to.eq(\"Finest\");",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(219);",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch song length 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})",
+							"",
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"pm.test(\"type update was applied\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(218);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"length\": 218\r\n}"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song after patch 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"I'm Gonna be\");",
+							"    pm.expect(pm.response.json()[\"artist\"]).to.eq(\"The Proclaimers\");",
+							"    pm.expect(pm.response.json()[\"album\"]).to.eq(\"Finest\");",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(218);",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put songs with non-json request 415",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"415 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(415);",
+							"});",
+							"",
+							"pm.test(\"415 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Only application/json MIMEtype is accepted\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/html"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Como Te Quiero\",\n    \"artist\": \"Khruangbin\",\n    \"album\": \"Con Todo El Mundo\",\n    \"length\": 243\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put song with invalid id 404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for appropriate 404 status code",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for appropriate error message",
+							"    pm.expect(pm.response.json()[\"Error\"]).to.equal(\"No song with this song_id exists\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Trouble\",\r\n    \"artist\": \"TV on the Radio\",\r\n    \"album\": \"Seeds\",\r\n    \"length\": 274\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{invalid_song_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{invalid_song_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put song with invalid length 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Valid song lengths are between 1 and 1048576\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Trouble\",\r\n    \"artist\": \"TV on the Radio\",\r\n    \"album\": \"Seeds\",\r\n    \"length\": \"I'm not an integer at all\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put song with extra attribute 303",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"303 status code\", function () {",
+							"    pm.response.to.have.status(303);",
+							"});",
+							"",
+							"",
+							"pm.test(\"check for redirect link in header\", function () {",
+							"    pm.response.to.have.header(\"Location\");",
+							"    //Check if the self url is correct",
+							"    const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.environment.get(\"song3_id\");",
+							"    pm.expect(pm.response.headers.get('Location')).to.contain(self_url);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Trouble\",\r\n    \"artist\": \"TV on the Radio\",\r\n    \"album\": \"Seeds\",\r\n    \"length\": 280,\r\n    \"extra\": \"cheese\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song after put w extra attribute",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"Trouble\");",
+							"    pm.expect(pm.response.json()[\"artist\"]).to.eq(\"TV on the Radio\");",
+							"    pm.expect(pm.response.json()[\"album\"]).to.eq(\"Seeds\");",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(280);",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put song with missing attribute",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"The request object is missing at least one of the required attributes\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Trouble\",\r\n    \"artist\": \"TV on the Radio\",\r\n    \"album\": \"Seeds\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put song 303",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"303 status code\", function () {",
+							"    pm.response.to.have.status(303);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})",
+							"",
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"pm.test(\"check for redirect link in header\", function () {",
+							"    pm.response.to.have.header(\"Location\");",
+							"    //Check if the self url is correct",
+							"    const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.environment.get(\"song1_id\");",
+							"    pm.expect(pm.response.headers.get('Location')).to.contain(self_url);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"I'm Gonna be - 500 Miles\",\r\n    \"artist\": \"The Proclaimers\",\r\n    \"album\": \"Finest\",\r\n    \"length\": 218\r\n}"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song after put",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"I'm Gonna be - 500 Miles\");",
+							"    pm.expect(pm.response.json()[\"artist\"]).to.eq(\"The Proclaimers\");",
+							"    pm.expect(pm.response.json()[\"album\"]).to.eq(\"Finest\");",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(218);",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add playlist with no JWT 401",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"response 401 status code\", function () {",
+							"    //Check for 401 status code",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"",
+							"pm.test(\"401 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Invalid token\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"true\",\n    \"description\": \"chill songs for focusing\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add playlist with non-json Accepts 406",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"406 status code\", function () {",
+							"    //Check for 406 status code",
+							"    pm.response.to.have.status(406);",
+							"});",
+							"",
+							"pm.test(\"406 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"No match was found between the request's Accept header and the available options for this endpoint\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "text/html",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"true\",\n    \"description\": \"chill songs for focusing\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add playlist with non-json request 415",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"415 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(415);",
+							"});",
+							"",
+							"pm.test(\"415 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Only application/json MIMEtype is accepted\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/html"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"true\",\n    \"description\": \"chill songs for focusing\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add playlist with missing attributes 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"The request object is missing at least one of the required attributes\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"lofi playlist\",\n    \"shuffle\": \"false\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/songs",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add playlist with invalid shuffle 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Valid shuffle values are true and false\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"bad value\",\n    \"description\": \"chill songs for focusing\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add playlist 1 201",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"//Set playlist id environment variable from response",
+							"pm.environment.set(\"playlist1_id\", pm.response.json()[\"id\"]);",
+							"",
+							"pm.test(\"response 201 status code\", function () {",
+							"    //Check for 201 status code",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Study Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"true\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"chill songs for focusing\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"true\",\n    \"description\": \"chill songs for focusing\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add playlist 2 with extra attributes 201",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"//Set playlist id environment variable from response",
+							"pm.environment.set(\"playlist2_id\", pm.response.json()[\"id\"]);",
+							"",
+							"pm.test(\"response 201 status code\", function () {",
+							"    //Check for 201 status code",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Party Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"false\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"songs for dancing\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Party Playlist\",\n    \"shuffle\": \"false\",\n    \"description\": \"songs for dancing\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add playlist 3 201",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"//Set playlist id environment variable from response",
+							"pm.environment.set(\"playlist3_id\", pm.response.json()[\"id\"]);",
+							"",
+							"pm.test(\"response 201 status code\", function () {",
+							"    //Check for 201 status code",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Instrumental\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"true\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"instrumental songs\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Instrumental\",\n    \"shuffle\": \"true\",\n    \"description\": \"instrumental songs\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific playlist JSON 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"Party Playlist\");",
+							"    pm.expect(pm.response.json()[\"description\"]).to.eq(\"songs for dancing\");",
+							"    pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"false\");",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"    pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"    pm.expect(pm.response.json()[\"songs\"].length).to.equal(0);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist2_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist2_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific playlist with wrong JWT 403",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"response 403 status code\", function () {",
+							"    //Check for 403 status code",
+							"    pm.response.to.have.status(403);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user2_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get playlist with invalid id 404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for 404 response",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"No playlist with this playlist_id exists\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user2_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{invalid_playlist_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{invalid_playlist_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get a users playlists 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"only correct number of playlists in response\", function () {",
+							"    //Check for correct number of loads",
+							"    pm.expect(pm.response.json()[\"playlists\"].length).to.equal(3);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get a users playlists valid JWT empty list 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"only correct number of playlists in response\", function () {",
+							"    //Check for correct number of loads",
+							"    pm.expect(pm.response.json()[\"playlists\"].length).to.equal(0);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user2_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get a users playlists no JWT 401",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"response 401 status code\", function () {",
+							"    //Check for 401 status code",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"",
+							"pm.test(\"401 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Invalid token\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get a users playlists invalid JWT 401",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"response 401 status code\", function () {",
+							"    //Check for 401 status code",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"",
+							"pm.test(\"401 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Invalid token\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{invalid_jwt}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get a users playlists invalid Accepts 406",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"406 status code\", function () {",
+							"    //Check for 406 status code",
+							"    pm.response.to.have.status(406);",
+							"});",
+							"",
+							"pm.test(\"406 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"No match was found between the request's Accept header and the available options for this endpoint\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/xml",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch playlist with no updated attributes 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"The request object is missing any recognized attributes\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\r\n}"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch playlist with non-json Accepts 406",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"406 status code\", function () {",
+							"    //Check for 406 status code",
+							"    pm.response.to.have.status(406);",
+							"});",
+							"",
+							"pm.test(\"406 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"No match was found between the request's Accept header and the available options for this endpoint\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "text/html",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"true\",\n    \"description\": \"chill songs for focusing and doing work\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch song with invalid id 404 Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for appropriate 404 status code",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for appropriate error message",
+							"    pm.expect(pm.response.json()[\"Error\"]).to.equal(\"No playlist with this playlist_id exists\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"true\",\r\n    \"description\": \"chill songs for focusing and doing work\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{invalid_playlist_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{invalid_playlist_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch song with non owner JWT 403",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"403 not found\", function () {",
+							"    //Check for appropriate 403 status code",
+							"    pm.response.to.have.status(403);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user2_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"true\",\r\n    \"description\": \"chill songs for focusing and doing work\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch playlist with invalid shuffle 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Valid shuffle values are true and false\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"maybe\",\r\n    \"description\": \"chill songs for focusing and doing work\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch playlist with non-json request 415",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"415 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(415);",
+							"});",
+							"",
+							"pm.test(\"415 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Only application/json MIMEtype is accepted\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/html"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"true\",\n    \"description\": \"chill songs for focusing and doing work\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific playlist after failed patch 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Study Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"true\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"chill songs for focusing\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch playlist description 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})",
+							"",
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"name update was applied\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"description\"]).to.eq(\"chill songs for focusing and coding\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"true\",\r\n    \"description\": \"chill songs for focusing and coding\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific playlist after success patch 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Study Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"true\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"chill songs for focusing and coding\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "patch playlist shuffle 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})",
+							"",
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"response content is updated\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Study Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"false\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"chill songs for focusing and coding\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"false\",\r\n    \"description\": \"chill songs for focusing and coding\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put playlist with no updated attributes 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"The request object is missing at least one of the required attributes\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\r\n}"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put playlist with invalid id 404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for appropriate 404 status code",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for appropriate error message",
+							"    pm.expect(pm.response.json()[\"Error\"]).to.equal(\"No playlist with this playlist_id exists\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"true\",\r\n    \"description\": \"chill songs for focusing and doing work\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{invalid_playlist_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{invalid_playlist_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put playlist with invalid shuffle 400",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"400 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"400 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Valid shuffle values are true and false\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"maybe\",\r\n    \"description\": \"chill songs for focusing and doing work\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put playlist with non owner JWT 403",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"403 not found\", function () {",
+							"    //Check for appropriate 403 status code",
+							"    pm.response.to.have.status(403);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user2_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"true\",\r\n    \"description\": \"chill songs for focusing and doing work\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put playlist with non-json request 415",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"415 status code\", function () {",
+							"    //Check for 400 status code",
+							"    pm.response.to.have.status(415);",
+							"});",
+							"",
+							"pm.test(\"415 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"Only application/json MIMEtype is accepted\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "text/html"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"true\",\n    \"description\": \"chill songs for focusing and doing work\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific playlist after failed put 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Study Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"false\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"chill songs for focusing and coding\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "put playlist 303",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"303 status code\", function () {",
+							"    pm.response.to.have.status(303);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})",
+							"",
+							"// Verify that the request is JSON",
+							"pm.test(\"request is JSON formatted\", function(){",
+							"    // Verify that the request has a content-type header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Content-Type\");",
+							"    pm.request.to.be.header(\"Content-Type\", \"application/json\");",
+							"    pm.expect(pm.request.headers.get('Content-Type')).to.contain('application/json');",
+							"})",
+							"",
+							"pm.test(\"request is set to accept JSON\", function(){",
+							"    // Verify that the request has an Accept header and that it is set to JSON",
+							"    pm.request.to.have.header(\"Accept\");",
+							"    pm.expect(pm.request.headers.get('Accept')).to.contain('application/json');",
+							"})",
+							"pm.test(\"check for redirect link in header\", function () {",
+							"    pm.response.to.have.header(\"Location\");",
+							"    //Check if the self url is correct",
+							"    const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.environment.get(\"playlist1_id\");",
+							"    pm.expect(pm.response.headers.get('Location')).to.contain(self_url);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"false\",\r\n    \"description\": \"songs for focusing and coding\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific playlist after success put 200",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"",
+							"pm.test(\"response content is valid\", function () {",
+							"   //Check if the response content is valid and matches the expected values",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Study Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"false\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"songs for focusing and coding\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"});",
+							"",
+							"pm.test(\"response content is JSON formatted\", function(){",
+							"    // Verify that the response has a content-type header and that it is set to JSON",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.contain('application/json');",
+							"",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a song to a playlist 204",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 status code\", function () {",
+							"    //Check for success 204 response code",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}",
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific playlist after song is added",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Study Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"false\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"songs for focusing and coding\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"   pm.expect(pm.response.json()[\"songs\"].length).to.equal(1);",
+							"   pm.expect(pm.response.json()[\"songs\"]).to.contain(pm.variables.get(\"song1_id\"));",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song after it is added to a playlist",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"I'm Gonna be - 500 Miles\");",
+							"    pm.expect(pm.response.json()[\"artist\"]).to.eq(\"The Proclaimers\");",
+							"    pm.expect(pm.response.json()[\"album\"]).to.eq(\"Finest\");",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(218);",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"   pm.expect(pm.response.json()[\"playlists\"]).to.contain(pm.variables.get(\"playlist1_id\"));",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a song 3 to a playlist 204",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 status code\", function () {",
+							"    //Check for success 204 response code",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}",
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a song 3 to a playlist 2 204",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 status code\", function () {",
+							"    //Check for success 204 response code",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist2_id}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist2_id}}",
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific playlist after 2nd song is added",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Study Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"false\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"songs for focusing and coding\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"   pm.expect(pm.response.json()[\"songs\"].length).to.equal(2);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a song to a playlist non owner JWT 403",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"403 status code\", function () {",
+							"    //Check for 403 response code",
+							"    pm.response.to.have.status(403);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user2_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}",
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a song to a playlist invalid song id 404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for 404 response",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"The specified playlist and/or song does not exist\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}/songs/{{invalid_song_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}",
+						"songs",
+						"{{invalid_song_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a song to a playlist invalid song id 404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for 404 response",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"The specified playlist and/or song does not exist\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}/songs/{{invalid_song_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}",
+						"songs",
+						"{{invalid_song_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a song to a playlist both invalid ids 404",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for 404 response",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"The specified playlist and/or song does not exist\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{invalid_playlist_id}}/songs/{{invalid_song_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{invalid_playlist_id}}",
+						"songs",
+						"{{invalid_song_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a song to a playlist non-json Accepts 406",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"406 status code\", function () {",
+							"    //Check for 406 status code",
+							"    pm.response.to.have.status(406);",
+							"});",
+							"",
+							"pm.test(\"406 error message\", function () {",
+							"     //Check for appropriate error message",
+							"     pm.expect(pm.response.json()[\"Error\"]).to.eq(\"No match was found between the request's Accept header and the available options for this endpoint\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "text/html",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"true\",\n    \"description\": \"chill songs for focusing and doing work\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}/songs/{{song2_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}",
+						"songs",
+						"{{song2_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add a song to a playlist invalid JWT 403",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"403 status code\", function () {",
+							"    //Check for 403 response code",
+							"    pm.response.to.have.status(403);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{invalid_jwt}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}",
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete song that belongs to no playlists 204",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 no content\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song2_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song2_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete song with invalid id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for appropriate 404 status code",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for appropriate error message",
+							"    pm.expect(pm.response.json()[\"Error\"]).to.equal(\"No song with this song_id exists\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{invalid_song_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{invalid_song_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete song that belongs to one playlist",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 no content\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "remove song 3 from playlist 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 status code\", function () {",
+							"    //Check for success 204 response code",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}",
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song after it is removed from a playlist",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"Trouble\");",
+							"    pm.expect(pm.response.json()[\"artist\"]).to.eq(\"TV on the Radio\");",
+							"    pm.expect(pm.response.json()[\"album\"]).to.eq(\"Seeds\");",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(280);",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"   pm.expect(pm.response.json()[\"playlists\"]).to.contain(pm.variables.get(\"playlist2_id\"));",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific playlist after song is removed",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"   pm.expect(pm.response.json()[\"name\"]).to.eq(\"Study Playlist\");",
+							"   pm.expect(pm.response.json()[\"shuffle\"]).to.eq(\"false\");",
+							"   pm.expect(pm.response.json()[\"description\"]).to.eq(\"songs for focusing and coding\");",
+							"   //Check if the self url is correct",
+							"   const self_url = pm.environment.get(\"app_url\") + \"/playlists/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"   pm.expect(pm.response.json()[\"songs\"].length).to.equal(0);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete playlist with non owner JWT 403",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"403 not found\", function () {",
+							"    //Check for appropriate 403 status code",
+							"    pm.response.to.have.status(403);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user2_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"true\",\r\n    \"description\": \"chill songs for focusing and doing work\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist2_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist2_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete playlist with no  JWT 401",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"401 not found\", function () {",
+							"    //Check for appropriate 401 status code",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Study Playlist\",\r\n    \"shuffle\": \"true\",\r\n    \"description\": \"chill songs for focusing and doing work\"\r\n} \r\n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete playlist that contains no songs 204",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 no content\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete playlist that contains a song",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 no content\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist2_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist2_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific song after a playlist is deleted",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"200 status code\", function () {",
+							"    //Check for success 200 response code",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"content is valid JSON\", function () {",
+							"    //Check if the content is valid",
+							"    pm.expect(pm.response.json()[\"name\"]).to.eq(\"Trouble\");",
+							"    pm.expect(pm.response.json()[\"artist\"]).to.eq(\"TV on the Radio\");",
+							"    pm.expect(pm.response.json()[\"album\"]).to.eq(\"Seeds\");",
+							"    pm.expect(pm.response.json()[\"length\"]).to.eq(280);",
+							"    //Check if the self url is correct",
+							"       const self_url = pm.environment.get(\"app_url\") + \"/songs/\" + pm.response.json()[\"id\"];",
+							"   pm.expect(pm.response.json()[\"self\"]).to.eq(self_url);",
+							"   pm.expect(pm.response.json()[\"playlists\"].length).to.equal(0);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete song 204",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 no content\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/songs/{{song3_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"songs",
+						"{{song3_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete playlist with invalid id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"404 not found\", function () {",
+							"    //Check for appropriate 404 status code",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"",
+							"pm.test(\"404 error message\", function () {",
+							"     //Check for appropriate error message",
+							"    pm.expect(pm.response.json()[\"Error\"]).to.equal(\"No playlist with this playlist_id exists\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{app_url}}/playlists/{{invalid_playlist_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{invalid_playlist_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete playlist 204",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"204 no content\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{user1_JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "text/html",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Study Playlist\",\n    \"shuffle\": \"true\",\n    \"description\": \"chill songs for focusing and doing work\"\n} \n"
+				},
+				"url": {
+					"raw": "{{app_url}}/playlists/{{playlist1_id}}",
+					"host": [
+						"{{app_url}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlist1_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

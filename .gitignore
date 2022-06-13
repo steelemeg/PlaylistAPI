@@ -159,6 +159,8 @@ constants.py
 mainp6.py
 main_noauth.py
 .gcloudignore
-*.json
-marshmeg*.pdf
+*secret*.json
 marshmeg*.zip
+SUBMIT/marshmeg_project.pdf
+SUBMIT/marshmeg_project.postman_collection.json
+SUBMIT/marshmeg_project.postman_environment.json
