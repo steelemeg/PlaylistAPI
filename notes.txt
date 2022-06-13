@@ -3,6 +3,9 @@ https://cs493-portfolio-marshmeg-2.uc.r.appspot.com/oauth
 https://www.googleapis.com/auth/userinfo.profile
 
 
-1. Okay to have all endpoints require a valid JWT? Except for the get-all open endpoints
-2. If a request needs to supply a user identifier, what needs to be specified by the person making the request.
+1. Verify that an endpoint for a non-user related entity can bypass JWT validation
+2. "If a request needs to supply a user identifier, what needs to be specified by the person making the request."
 		what does this mean? It really requires the JWT
+		
+Office hours starting now! Today will probably be VERY busy, with a pretty long queue. I have a hard stop at 2pm Pacific, but will try to get everyone some help today. Please write up your questions, as this lets me multitask a bit! 
+

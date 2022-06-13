@@ -3,7 +3,7 @@ from flask import Flask, request, render_template, Response
 import json
 import constants
 import songs
-import owners
+import users
 import playlists
 import os
 # Using Google OAuth as my JWT provider and to obtain user information.
@@ -19,11 +19,11 @@ from google.auth import jwt
 app = Flask(__name__)
 app.register_blueprint(songs.bp)
 app.register_blueprint(playlists.bp)
-app.register_blueprint(owners.bp)
+app.register_blueprint(users.bp)
 app.state = ''
 client = datastore.Client()
 
-# We don't require as much user information for this project
+# Sticking to non-sensitive profile data
 app.scope =['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile']
 app.google = OAuth2Session(constants.client_id, scope=app.scope, redirect_uri=constants.redirect_url)
     
@@ -66,7 +66,7 @@ def oauth():
     except:
         print('Problem parsing user information')
     # Per https://dev.to/kimmaida/signing-and-validating-json-web-tokens-jwt-for-everyone-25fb 
-    # the JWT itself is supposed to be pretty big (800+ characters)
+    #  we can expect the JWT to be ~800 characters
     
     # Check if this user is new
     query = client.query(kind="users")

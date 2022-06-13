@@ -15,37 +15,21 @@ client = datastore.Client()
 
 bp = Blueprint('songs', __name__, url_prefix='/songs')
 
-def get_songs():
-    # Helper function that handles querying for songs
-    query = client.query(kind=constants.songs)
-    q_limit = int(request.args.get('limit', '5'))
-    q_offset = int(request.args.get('offset', '0'))
-    l_iterator = query.fetch(limit= q_limit, offset=q_offset)
-    pages = l_iterator.pages
-    results = list(next(pages))
+def song_length(seconds):
+    # Checks if the song length is a number and imposes an 
+    # arbitrary length restriction of 2^20 seconds
+    if not isinstance(seconds, int):
+        res_body = json.dumps({"Error": "Valid song lengths are between 1 and 1048576"})
+        res = Response(response=res_body, status=400, mimetype="application/json")         
+        res.headers.set('Content-Type', 'application/json; charset=utf-8')            
+        return res
+    if seconds < 1 or seconds > 1048576:
+        res_body = json.dumps({"Error": "Valid song lengths are between 1 and 1048576"})
+        res = Response(response=res_body, status=400, mimetype="application/json")         
+        res.headers.set('Content-Type', 'application/json; charset=utf-8')            
+        return res
 
-    # how to combine nice ordering with the stupid results paginator TODO
-    if l_iterator.next_page_token:
-        next_offset = q_offset + q_limit
-        next_url = request.base_url + "?limit=" + str(q_limit) + "&offset=" + str(next_offset)
-    else:
-        next_url = None
-
-    ordered_results = []      
-       
-    for e in results:
-        e["id"] = e.key.id
-        e["self"] = request.root_url + "songs/" + str(e.key.id)
-    output = {"songs": results}
-    if next_url:
-        output["next"] = next_url
-             
-    res_body = json.dumps(output)
-    res = Response(response=res_body, status=201, mimetype="application/json")         
-    res.headers.set('Content-Type', 'application/json; charset=utf-8')          
-    return res
-    
-@bp.route('', methods=['POST','GET'])
+@bp.route('', methods=['POST','GET','DELETE','PUT','PATCH'])
 def songs_post_get():
     if request.method == 'POST':
         # Check that the request is JSON 
@@ -58,31 +42,22 @@ def songs_post_get():
             return res
             
         content = request.get_json()
-        # Define here so we only have to call id_token verification once.
-        userid = ''
-        encrypted_jwt = request.headers.get("Authorization")
+
         # Check that all required attributes are present in the POST request
-        # Validation is not required, but keeping the code since it's pretty straightforward
+        # Validation is not required!
         if content.get("name") == None or content.get("artist") == None or content.get("length") == None :
             # If the request was missing any of the required attributes, return error 400
-            return (json.dumps({"Error": "The request object is missing at least one of the required attributes"}), 400)
-        # Verify the JWT
-        if not encrypted_jwt:
-            res_body = json.dumps({"Error": "Invalid token"})
-            res = Response(response=res_body, status=401)         
-            return res
-        # Postman will prepend "Bearer" so we have to discard that piece of the string
-        #https://docs.python.org/3/library/stdtypes.html#str.split            
-
-        try:
-            idinfo = id_token.verify_oauth2_token(encrypted_jwt.split()[1], requests.Request(), constants.client_id)
-            userid = idinfo['sub']
-        except ValueError:
-            res_body = json.dumps({"Error": "Invalid token"})
-            res = Response(response=res_body, status=401)         
+            res_body = json.dumps({"Error": "The request object is missing at least one of the required attributes"})
+            res = Response(response=res_body, status=400, mimetype="application/json")         
+            res.headers.set('Content-Type', 'application/json; charset=utf-8')            
             return res
        
-        # If the required attributes were present, and the JWT was valid, make a new song!
+        # Check that a valid length was provided
+        res = song_length(content.get("length"))
+        if res != None:
+            return res
+            
+        # If the required attributes were present, make a new song!
         # If no album was provided, plug in a blank space
         album = " " if content.get("album") == None else content.get("album")
             
@@ -115,66 +90,148 @@ def songs_post_get():
         res = accept_type_validation(['application/json'])
         if res != None:
             return res
-        all_songs = get_songs()
+        all_songs = get_things("songs", True, None)
         return all_songs
 
     else:
-        return 'Method not recognized'
+        # Use status code 405 for PUT, PATCH, or DELETE requests on the root songs URL
+        res_body = json.dumps({"Error": "Invalid method for this endpoint"})
+        res = Response(response=res_body, status=405, mimetype="application/json")         
+        res.headers.set('Content-Type', 'application/json; charset=utf-8')            
+        return res
 
     
-@bp.route('/<id>', methods=['GET','DELETE'])
-def songs_get_delete(id):
+@bp.route('/<id>', methods=['GET','DELETE','PUT','PATCH','POST'])
+def songs_by_id(id):
     song_key = client.key(constants.songs, int(id))
     song = client.get(key=song_key)
-    song_exists = False if song == None else True  
-    correct_owner = False
-    valid_jwt = False
-  
-    userid = ''
-    encrypted_jwt = request.headers.get("Authorization")
-
-    if encrypted_jwt != None:    
-        try:
-            idinfo = id_token.verify_oauth2_token(encrypted_jwt.split()[1], requests.Request(), constants.client_id)
-            userid = idinfo['sub']
-            valid_jwt = True
-        except ValueError:
-            correct_owner = False
-    
-    # Does this user own the song?
-    if song_exists and userid == song["owner"]:
-        correct_owner = True      
-    
+    song_exists = False if song == None else True     
+    # Does this song exist?
+    if not song_exists:
+        res_body = json.dumps({"Error": "No song with this song_id exists"})
+        res = Response(response=res_body, status=404, mimetype="application/json")         
+        res.headers.set('Content-Type', 'application/json; charset=utf-8')  
+        return res
+        
     if request.method == 'GET':
-        # Does this song exist, and does this JWT have access to it?
-        if song_exists and (correct_owner or song["public"]):
-            return (json.dumps({
+        # This endpoint only returns JSON
+        res = accept_type_validation(['application/json'])
+        if res != None:
+            return res
+
+        if song_exists:
+            res_body = json.dumps({
                 "id": song.key.id, 
                 "name": song["name"], 
-                "type": song["type"],
+                "artist": song["artist"],
+                "album": song["album"],
                 "length": song["length"],
-                "public": song["public"],
-                "owner": song["owner"],
-                "self": request.root_url + "songs/" + str(song.key.id)}), 200) 
+                "playlists": song["playlists"],
+                "self": request.root_url + "songs/" + str(song.key.id)})
+            res = Response(response=res_body, status=200, mimetype="application/json")         
+            res.headers.set('Content-Type', 'application/json; charset=utf-8')    
+            return res 
         
     elif request.method == 'DELETE':
-        #Only the owner of a song with a valid JWT should be able to delete that song
-        # If a song exists with this song_id and the JWT in the request is valid 
-        # and the JWT belongs to the song's owner, delete the song and return 204 
-        if song_exists and valid_jwt and correct_owner:
+        if song_exists:
+            # Update playlists that contained this song
+            query = client.query(kind=constants.playlists)
+            results = list(query.fetch())
+            for e in results:
+                if song.key.id in e["songs"]:
+                    e["songs"].remove(song.key.id)
+                    e.update({"songs": e["songs"]})
+                    client.put(e)
             client.delete(song_key)
             return ('',204)
-        #Return 401 status code for missing or invalid JWTs.
-        if not valid_jwt:
-            return ('',401)
-        #Return 403 status code:
-        #If the JWT is valid but song_id is owned by someone else
-        if valid_jwt and not correct_owner:
-            return ('',403)
-        #If the JWT is valid but no song with this song_id exists
-        if valid_jwt and not song_exists:
-            return ('',403)
-         
+        
+    
+    elif request.method == 'PATCH':
+        # Check that the request is JSON 
+        content, res = request_validation()
+        if res != None:
+            return res
+        # This endpoint only returns JSON
+        res = accept_type_validation(['application/json'])
+        if res != None:
+            return res
+        
+        # Check that at least one required attributes are present in the PATCH request
+        elif content.get("name") == None and content.get("artist") == None and content.get("album") == None and content.get("length") == None:
+            # If the request was missing all of the required attributes, return error 400
+            res_body = json.dumps({"Error": "The request object is missing any recognized attributes"})
+            res = Response(response=res_body, status=400, mimetype="application/json")         
+            res.headers.set('Content-Type', 'application/json; charset=utf-8')            
+            return res
+
+        # If a length was provided, validate it.
+        elif content.get("length") != None:
+            res = song_length(content.get("length"))
+            if res != None:
+                return res
+                
+        # Update the song!
+        if content.get("name") != None:
+            song.update({"name": content["name"]})
+        if content.get("artist") != None:
+            song.update({"artist": content["artist"]})
+        if content.get("album") != None:
+            song.update({"album": content["album"]})
+        if content.get("length") != None:
+            song.update({"length": content["length"]})
+        # Persist the entity to Datastore
+        client.put(song)
+        res_body = json.dumps({
+            "id": song.key.id, 
+            "name": song["name"], 
+            "artist": song["artist"],
+            "album": song["album"],
+            "length": song["length"],
+            "playlists": song["playlists"],
+            "self": request.root_url + "songs/" + str(song.key.id)})
+
+        res = Response(response=res_body, status=200, mimetype="application/json")         
+        res.headers.set('Content-Type', 'application/json; charset=utf-8')
+        return res
+    
+    elif request.method == 'PUT':
+        # Check that the request is JSON 
+        content, res = request_validation()
+        if res != None:
+            return res
+        
+        # Check that at required attributes are present in the PUT request
+        elif content.get("name") == None or content.get("artist") == None or content.get("length") == None:
+            # If the request was missing any of the required attributes, return error 400
+            res_body = json.dumps({"Error": "The request object is missing at least one of the required attributes"})
+            res = Response(response=res_body, status=400, mimetype="application/json")         
+            res.headers.set('Content-Type', 'application/json; charset=utf-8')            
+            return res
+
+        res = song_length(content.get("length"))
+        if res != None:
+            return res
+                
+        # Update the song!
+        song.update({"name": content["name"]})
+        song.update({"artist": content["artist"]})
+        if content.get("album") != None:
+            song.update({"album": content["album"]})
+        song.update({"length": content["length"]})
+        # Persist the entity to Datastore
+        client.put(song)
+        res = Response(response="", status=303, mimetype="application/json")         
+        res.headers.set('Content-Type', 'application/json; charset=utf-8')         
+        song_self = request.root_url + "songs/" + str(song.key.id)
+        res.headers.set('Location', song_self)
+        return res
+    
     else:
-        return 'Method not recognized'
+        # Use status code 405 for POST requests on the song ID
+        # And presumably any other verb, which would be invalid and caught differently by Flask.
+        print("check")
+        res_body = json.dumps({"Error": "Invalid method for this endpoint"})
+        res = Response(response=res_body, status=405, mimetype="application/json")         
+        res.headers.set('Content-Type', 'application/json; charset=utf-8')            
+        return res
  
