@@ -1,7 +1,8 @@
 # CS493-Project7
  
 ## API project for Cloud Application Development 
-### Oregon State University Spring 2022
+
+Oregon State University Spring 2022
 
 Features:
 
